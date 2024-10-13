@@ -13,13 +13,29 @@ import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class WebClientConfig {
+
     @Bean
     public WebClient webClientAutenticacion(WebClient.Builder builder) {
+
+        // configuracion timeout en HttpClient Netty
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000) // timeout de conexion
+                .responseTimeout(Duration.ofSeconds(10)) // timeout de lectura de toda la respuesta
+                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(10, TimeUnit.SECONDS))); // timeout de lectura de cada paquete
+
+        return builder
+                .baseUrl("http://localhost:8081/autenticacion")
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .build();
+
+    }
+    @Bean
+    public WebClient webClientFinanzas(WebClient.Builder builder) {
         //configuracion de timeout en HttpClient Netty
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)//time out de conexion
-                .responseTimeout(Duration.ofMillis(10))//time out de lectura de respuesta
-                .doOnConnected(conn ->conn.addHandlerLast(new ReadTimeoutHandler(10, TimeUnit.SECONDS)));//timeout de lectura de cada paquete 
+                .responseTimeout(Duration.ofSeconds(10))//time out de lectura de respuesta
+                .doOnConnected(conn ->conn.addHandlerLast(new ReadTimeoutHandler(10, TimeUnit.SECONDS)));//timeout de lectura de cada paquete
 
 
 
